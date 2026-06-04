@@ -13,12 +13,7 @@ export default function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow">
-              <span className="text-white font-bold text-sm">A</span>
-            </div>
-            <span className="text-lg font-bold text-slate-800 tracking-tight">
-              {BRAND.name}
-            </span>
+            <img src="/logo.png" alt={BRAND.name} className="h-8 w-auto object-contain" />
           </Link>
 
           {/* Desktop Navigation */}

@@ -12,11 +12,10 @@ export default function AdminSidebar() {
       {/* Logo */}
       <div className="p-6 border-b border-slate-800">
         <Link href="/admin" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center">
-            <span className="text-white font-bold text-sm">A</span>
+          <div className="bg-white p-1.5 rounded-lg flex items-center justify-center">
+            <img src="/logo.png" alt={BRAND.name} className="h-6 w-auto object-contain" />
           </div>
           <div>
-            <div className="text-sm font-bold tracking-tight">{BRAND.name}</div>
             <div className="text-xs text-slate-400">Admin Panel</div>
           </div>
         </Link>
