@@ -3,6 +3,13 @@ import { put } from '@vercel/blob';
 
 export async function POST(request: Request) {
   try {
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      return NextResponse.json({ 
+        success: false, 
+        error: "Vercel Blob token is missing. Please add BLOB_READ_WRITE_TOKEN to your .env.local file." 
+      }, { status: 500 });
+    }
+
     const formData = await request.formData();
     const file = formData.get('file') as File;
     
