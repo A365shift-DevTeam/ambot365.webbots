@@ -48,7 +48,7 @@ export default async function BotLandingPage({
   if (bot.backgroundImageUrl) {
     return (
       <main 
-        className="w-full min-h-screen bg-cover bg-top bg-no-repeat relative fixed inset-0 overflow-hidden"
+        className="fixed inset-0 w-full min-h-screen bg-cover bg-center md:bg-top bg-no-repeat overflow-hidden"
         style={{ backgroundImage: `url('${bot.backgroundImageUrl}')` }}
       >
         <BotEmbed 
