@@ -20,6 +20,7 @@ export default function BotForm({ bot, mode }: BotFormProps) {
     description: bot?.description || '',
     botFlowUrl: bot?.botFlowUrl || '',
     backgroundImageUrl: bot?.backgroundImageUrl || '',
+    mobileBackgroundImageUrl: bot?.mobileBackgroundImageUrl || '',
     themeColor: bot?.themeColor || '#22c55e',
     bubbleIconUrl: bot?.bubbleIconUrl || '',
     category: bot?.category || 'other',
@@ -32,7 +33,7 @@ export default function BotForm({ bot, mode }: BotFormProps) {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'backgroundImageUrl' | 'bubbleIconUrl') => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'backgroundImageUrl' | 'mobileBackgroundImageUrl' | 'bubbleIconUrl') => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -219,6 +220,37 @@ export default function BotForm({ bot, mode }: BotFormProps) {
         </div>
         <p className="mt-2 text-xs text-slate-400">
           Paste a link to an image of the client's website. If provided, it will be used as a full-screen background to simulate the bot on their site.
+        </p>
+      </div>
+
+      {/* Mobile Background Image URL */}
+      <div>
+        <label htmlFor="mobileBackgroundImageUrl" className="block text-sm font-medium text-slate-700 mb-2">
+          Mobile Background Image URL (Optional)
+        </label>
+        <div className="flex gap-3">
+          <input
+            type="text"
+            id="mobileBackgroundImageUrl"
+            name="mobileBackgroundImageUrl"
+            value={formData.mobileBackgroundImageUrl || ''}
+            onChange={handleChange}
+            placeholder="https://example.com/mobile-screenshot.png or upload a file"
+            className="flex-1 px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-800 placeholder-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all outline-none font-mono text-sm"
+          />
+          <label className="flex items-center justify-center px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl cursor-pointer transition-colors border border-slate-200 whitespace-nowrap">
+            {uploadingImage === 'mobileBackgroundImageUrl' ? 'Uploading...' : 'Upload File'}
+            <input 
+              type="file" 
+              accept="image/*" 
+              className="hidden" 
+              onChange={(e) => handleFileUpload(e, 'mobileBackgroundImageUrl')} 
+              disabled={uploadingImage !== null}
+            />
+          </label>
+        </div>
+        <p className="mt-2 text-xs text-slate-400">
+          Upload a portrait version of the background specifically for mobile screens. If left blank, the desktop background will be used on mobile.
         </p>
       </div>
 

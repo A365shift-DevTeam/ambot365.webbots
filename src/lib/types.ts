@@ -17,6 +17,7 @@ export interface Bot {
   description: string;
   botFlowUrl: string;
   backgroundImageUrl?: string;
+  mobileBackgroundImageUrl?: string;
   themeColor?: string;
   bubbleIconUrl?: string;
   category: Category;
@@ -30,6 +31,7 @@ export interface BotFormData {
   description: string;
   botFlowUrl: string;
   backgroundImageUrl?: string;
+  mobileBackgroundImageUrl?: string;
   themeColor?: string;
   bubbleIconUrl?: string;
   category: Category;

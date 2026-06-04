@@ -45,11 +45,17 @@ export default async function BotLandingPage({
 
   const category = CATEGORIES.find((c) => c.value === bot.category);
 
-  if (bot.backgroundImageUrl) {
+  if (bot.backgroundImageUrl || bot.mobileBackgroundImageUrl) {
+    const desktopBg = bot.backgroundImageUrl || bot.mobileBackgroundImageUrl;
+    const mobileBg = bot.mobileBackgroundImageUrl || bot.backgroundImageUrl;
+
     return (
       <main 
-        className="fixed inset-0 w-full min-h-screen bg-cover bg-[position:30%_center] md:bg-center bg-no-repeat overflow-hidden"
-        style={{ backgroundImage: `url('${bot.backgroundImageUrl}')` }}
+        className="fixed inset-0 w-full min-h-screen bg-cover bg-[position:30%_center] md:bg-center bg-no-repeat overflow-hidden bg-[image:var(--bg-mobile)] md:bg-[image:var(--bg-desktop)]"
+        style={{ 
+          '--bg-desktop': `url('${desktopBg}')`,
+          '--bg-mobile': `url('${mobileBg}')`
+        } as React.CSSProperties}
       >
         <BotEmbed 
           botFlowUrl={bot.botFlowUrl} 
