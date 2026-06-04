@@ -1,22 +1,23 @@
 // AMBOT 365 - Bot CRUD Operations (file-based storage)
-import { promises as fs } from 'fs';
-import path from 'path';
+import { kv } from '@vercel/kv';
 import { Bot, BotFormData } from './types';
-
-const DATA_PATH = path.join(process.cwd(), 'data', 'bots.json');
 
 async function readBots(): Promise<Bot[]> {
   try {
-    const data = await fs.readFile(DATA_PATH, 'utf-8');
-    return JSON.parse(data) as Bot[];
-  } catch {
+    // Return empty array if KV is not configured locally yet
+    if (!process.env.KV_REST_API_URL) return [];
+    
+    const data = await kv.get<Bot[]>('ambot365_bots');
+    return data || [];
+  } catch (error) {
+    console.error('Failed to read from KV:', error);
     return [];
   }
 }
 
 async function writeBots(bots: Bot[]): Promise<void> {
-  await fs.mkdir(path.dirname(DATA_PATH), { recursive: true });
-  await fs.writeFile(DATA_PATH, JSON.stringify(bots, null, 2), 'utf-8');
+  if (!process.env.KV_REST_API_URL) return;
+  await kv.set('ambot365_bots', bots);
 }
 
 function generateSlug(name: string): string {
