@@ -1,8 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   reactCompiler: true,
+  // Allow dynamic API routes to function correctly
+  serverExternalPackages: ['jose'],
 };
 
 export default nextConfig;
