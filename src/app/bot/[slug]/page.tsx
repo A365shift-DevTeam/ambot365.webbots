@@ -58,10 +58,8 @@ export default async function BotLandingPage({
         } as React.CSSProperties}
       >
         <BotEmbed 
-          botFlowUrl={bot.botFlowUrl} 
+          scriptCode={bot.scriptCode} 
           botName={bot.name} 
-          themeColor={bot.themeColor}
-          bubbleIconUrl={bot.bubbleIconUrl}
         />
       </main>
     );
@@ -96,10 +94,8 @@ export default async function BotLandingPage({
               Click the chat widget in the bottom right to interact with the bot.
             </p>
             <BotEmbed 
-              botFlowUrl={bot.botFlowUrl} 
+              scriptCode={bot.scriptCode} 
               botName={bot.name} 
-              themeColor={bot.themeColor}
-              bubbleIconUrl={bot.bubbleIconUrl}
             />
           </div>
         </section>

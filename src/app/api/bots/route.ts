@@ -33,35 +33,24 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, description, botFlowUrl, backgroundImageUrl, themeColor, bubbleIconUrl, category } = body as BotFormData;
+    const { name, description, scriptCode, backgroundImageUrl, category } = body as BotFormData;
 
     // Validate required fields
-    if (!name?.trim() || !description?.trim() || !botFlowUrl?.trim() || !category) {
+    if (!name?.trim() || !description?.trim() || !scriptCode?.trim() || !category) {
       return Response.json(
         { success: false, error: 'All fields are required' },
         { status: 400 }
       );
     }
 
-    // Validate URLs
-    if (!isValidUrl(botFlowUrl)) {
-      return Response.json(
-        { success: false, error: 'Invalid bot flow URL. Must be a valid HTTP/HTTPS URL.' },
-        { status: 400 }
-      );
-    }
+    // scriptCode is freeform HTML — no URL validation needed
     if (backgroundImageUrl && !isValidUrl(backgroundImageUrl, true)) {
       return Response.json(
         { success: false, error: 'Invalid background image URL' },
         { status: 400 }
       );
     }
-    if (bubbleIconUrl && !isValidUrl(bubbleIconUrl, true)) {
-      return Response.json(
-        { success: false, error: 'Invalid bubble icon URL' },
-        { status: 400 }
-      );
-    }
+
 
     // Validate category
     const validCategories = CATEGORIES.map((c) => c.value);
@@ -72,7 +61,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const newBot = await createBot({ name, description, botFlowUrl, backgroundImageUrl, themeColor, bubbleIconUrl, category });
+    const newBot = await createBot({ name, description, scriptCode, backgroundImageUrl, category });
     return Response.json({ success: true, data: newBot }, { status: 201 });
   } catch {
     return Response.json(

@@ -46,21 +46,9 @@ export async function PUT(
     const body = await request.json();
 
     // Validate URLs if provided
-    if (body.botFlowUrl && !isValidUrl(body.botFlowUrl)) {
-      return Response.json(
-        { success: false, error: 'Invalid bot flow URL' },
-        { status: 400 }
-      );
-    }
     if (body.backgroundImageUrl && !isValidUrl(body.backgroundImageUrl, true)) {
       return Response.json(
         { success: false, error: 'Invalid background image URL' },
-        { status: 400 }
-      );
-    }
-    if (body.bubbleIconUrl && !isValidUrl(body.bubbleIconUrl, true)) {
-      return Response.json(
-        { success: false, error: 'Invalid bubble icon URL' },
         { status: 400 }
       );
     }

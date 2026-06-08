@@ -18,11 +18,9 @@ export default function BotForm({ bot, mode }: BotFormProps) {
   const [formData, setFormData] = useState<BotFormData>({
     name: bot?.name || '',
     description: bot?.description || '',
-    botFlowUrl: bot?.botFlowUrl || '',
+    scriptCode: bot?.scriptCode || '',
     backgroundImageUrl: bot?.backgroundImageUrl || '',
     mobileBackgroundImageUrl: bot?.mobileBackgroundImageUrl || '',
-    themeColor: bot?.themeColor || '#22c55e',
-    bubbleIconUrl: bot?.bubbleIconUrl || '',
     category: bot?.category || 'other',
   });
   const [enabled, setEnabled] = useState(bot?.enabled ?? true);
@@ -33,7 +31,7 @@ export default function BotForm({ bot, mode }: BotFormProps) {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'backgroundImageUrl' | 'mobileBackgroundImageUrl' | 'bubbleIconUrl') => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'backgroundImageUrl' | 'mobileBackgroundImageUrl') => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -67,14 +65,9 @@ export default function BotForm({ bot, mode }: BotFormProps) {
     setError('');
     setLoading(true);
 
-    // Validate URL
-    try {
-      const url = new URL(formData.botFlowUrl);
-      if (url.protocol !== 'https:' && url.protocol !== 'http:') {
-        throw new Error('URL must use HTTPS or HTTP');
-      }
-    } catch {
-      setError('Please enter a valid URL (must start with https:// or http://)');
+    // Validate script code
+    if (!formData.scriptCode.trim()) {
+      setError('Please enter the bot script code');
       setLoading(false);
       return;
     }
@@ -172,23 +165,23 @@ export default function BotForm({ bot, mode }: BotFormProps) {
         />
       </div>
 
-      {/* Bot Flow URL */}
+      {/* Bot Script Code */}
       <div>
-        <label htmlFor="botFlowUrl" className="block text-sm font-medium text-slate-700 mb-2">
-          Bot Flow URL *
+        <label htmlFor="scriptCode" className="block text-sm font-medium text-slate-700 mb-2">
+          Bot Script Code *
         </label>
-        <input
-          type="url"
-          id="botFlowUrl"
-          name="botFlowUrl"
-          value={formData.botFlowUrl}
+        <textarea
+          id="scriptCode"
+          name="scriptCode"
+          value={formData.scriptCode}
           onChange={handleChange}
           required
-          placeholder="https://your-chatbot-platform.com/bot-flow-url"
-          className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-800 placeholder-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all outline-none font-mono text-sm"
+          rows={4}
+          placeholder='<script id="messenger-widget-b" src="https://cdn.example.com/bot.js" defer>your-bot-id</script>'
+          className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-800 placeholder-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all outline-none font-mono text-sm resize-none"
         />
         <p className="mt-2 text-xs text-slate-400">
-          Enter the full URL of your chatbot flow from your chatbot platform.
+          Paste the full &lt;script&gt; tag provided by your chatbot platform.
         </p>
       </div>
 
@@ -254,66 +247,7 @@ export default function BotForm({ bot, mode }: BotFormProps) {
         </p>
       </div>
 
-      {/* Theme Color & Bubble Icon Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div>
-          <label htmlFor="themeColor" className="block text-sm font-medium text-slate-700 mb-2">
-            Widget Theme Color
-          </label>
-          <div className="flex items-center gap-3">
-            <input
-              type="color"
-              id="themeColor"
-              name="themeColor"
-              value={formData.themeColor}
-              onChange={handleChange}
-              className="w-12 h-12 p-1 rounded-lg border border-slate-200 cursor-pointer"
-            />
-            <input
-              type="text"
-              value={formData.themeColor}
-              onChange={handleChange}
-              name="themeColor"
-              placeholder="#22c55e"
-              className="flex-1 px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-800 focus:border-brand-500 outline-none font-mono text-sm"
-              maxLength={7}
-            />
-          </div>
-          <p className="mt-2 text-xs text-slate-400">
-            Hex code for the bubble and header color.
-          </p>
-        </div>
 
-        <div>
-          <label htmlFor="bubbleIconUrl" className="block text-sm font-medium text-slate-700 mb-2">
-            Bubble Avatar Icon URL
-          </label>
-          <div className="flex gap-3">
-            <input
-              type="text"
-              id="bubbleIconUrl"
-              name="bubbleIconUrl"
-              value={formData.bubbleIconUrl}
-              onChange={handleChange}
-              placeholder="https://example.com/icon.png or upload"
-              className="flex-1 w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-800 placeholder-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all outline-none font-mono text-sm"
-            />
-            <label className="flex items-center justify-center px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl cursor-pointer transition-colors border border-slate-200 whitespace-nowrap">
-              {uploadingImage === 'bubbleIconUrl' ? 'Uploading...' : 'Upload'}
-              <input 
-                type="file" 
-                accept="image/*" 
-                className="hidden" 
-                onChange={(e) => handleFileUpload(e, 'bubbleIconUrl')} 
-                disabled={uploadingImage !== null}
-              />
-            </label>
-          </div>
-          <p className="mt-2 text-xs text-slate-400">
-            Optional image URL for the chat bubble icon.
-          </p>
-        </div>
-      </div>
 
       {/* Category */}
       <div>

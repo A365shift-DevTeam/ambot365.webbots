@@ -15,11 +15,9 @@ export interface Bot {
   name: string;
   slug: string;
   description: string;
-  botFlowUrl: string;
+  scriptCode: string;
   backgroundImageUrl?: string;
   mobileBackgroundImageUrl?: string;
-  themeColor?: string;
-  bubbleIconUrl?: string;
   category: Category;
   enabled: boolean;
   createdAt: string;
@@ -29,11 +27,9 @@ export interface Bot {
 export interface BotFormData {
   name: string;
   description: string;
-  botFlowUrl: string;
+  scriptCode: string;
   backgroundImageUrl?: string;
   mobileBackgroundImageUrl?: string;
-  themeColor?: string;
-  bubbleIconUrl?: string;
   category: Category;
 }
 
