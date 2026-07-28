@@ -33,8 +33,35 @@ export interface BotFormData {
   category: Category;
 }
 
+export interface DemoWebsite {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  url: string;
+  thumbnailUrl?: string;
+  category: Category;
+  tags?: string[];
+  enabled: boolean;
+  featured?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WebsiteFormData {
+  title: string;
+  description: string;
+  url: string;
+  thumbnailUrl?: string;
+  category: Category;
+  tags?: string[];
+  enabled?: boolean;
+  featured?: boolean;
+}
+
 export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
 }
+

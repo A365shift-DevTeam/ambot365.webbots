@@ -24,11 +24,14 @@ export const CATEGORIES: { value: Category; label: string; icon: string }[] = [
 
 export const NAV_LINKS = [
   { href: '/', label: 'Home' },
-  { href: '/bots', label: 'Bots' },
+  { href: '/websites', label: 'Demo Sites' },
+  { href: '/bots', label: 'AI Bots' },
   { href: '/contact', label: 'Contact' },
 ];
 
 export const ADMIN_NAV_LINKS = [
   { href: '/admin', label: 'Dashboard' },
   { href: '/admin/add', label: 'Add Bot' },
+  { href: '/admin/websites/add', label: 'Add Website' },
 ];
+
