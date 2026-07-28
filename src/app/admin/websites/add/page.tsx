@@ -136,9 +136,8 @@ export default function AddWebsitePage() {
           />
         </div>
 
-import ImageUploader from '@/components/admin/ImageUploader';
-
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
               Industry Category *
