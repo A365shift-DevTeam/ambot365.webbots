@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { CATEGORIES } from '@/lib/constants';
 import { Category } from '@/lib/types';
+import ImageUploader from '@/components/admin/ImageUploader';
+
 
 export default function AddWebsitePage() {
   const router = useRouter();
@@ -134,6 +136,8 @@ export default function AddWebsitePage() {
           />
         </div>
 
+import ImageUploader from '@/components/admin/ImageUploader';
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
@@ -153,18 +157,13 @@ export default function AddWebsitePage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
-              Thumbnail Image URL (Optional)
-            </label>
-            <input
-              type="url"
-              placeholder="https://images.unsplash.com/..."
+            <ImageUploader
               value={formData.thumbnailUrl}
-              onChange={(e) => setFormData({ ...formData, thumbnailUrl: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
+              onChange={(url) => setFormData({ ...formData, thumbnailUrl: url })}
             />
           </div>
         </div>
+
 
         <div>
           <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">

@@ -1,6 +1,8 @@
-// AMBOT 365 - Demo Websites CRUD Operations (Supabase + Global Persistent Fallback Storage)
+// AMBOT 365 - Demo Websites CRUD Operations (Supabase + Disk File Persistence)
 import { createClient } from '@supabase/supabase-js';
 import { DemoWebsite, WebsiteFormData } from './types';
+import fs from 'fs';
+import path from 'path';
 
 // Initialize Supabase Client safely
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -14,23 +16,37 @@ const supabase = createClient(
   supabaseKey || 'placeholder-key'
 );
 
+const DATA_FILE_PATH = path.join(process.cwd(), 'src', 'data', 'websites.json');
+
+function getLocalStore(): DemoWebsite[] {
+  try {
+    if (fs.existsSync(DATA_FILE_PATH)) {
+      const content = fs.readFileSync(DATA_FILE_PATH, 'utf8');
+      return JSON.parse(content) as DemoWebsite[];
+    }
+  } catch (err) {
+    console.error('Error reading local websites JSON file:', err);
+  }
+  return [];
+}
+
+function saveLocalStore(data: DemoWebsite[]): void {
+  try {
+    const dir = path.dirname(DATA_FILE_PATH);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(DATA_FILE_PATH, JSON.stringify(data, null, 2), 'utf8');
+  } catch (err) {
+    console.error('Failed to save websites to disk:', err);
+  }
+}
+
 function generateSlug(title: string): string {
   return title
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
-}
-
-// Global persistent storage in Node process memory
-declare global {
-  var __localWebsitesStore: DemoWebsite[] | undefined;
-}
-
-function getLocalStore(): DemoWebsite[] {
-  if (!globalThis.__localWebsitesStore) {
-    globalThis.__localWebsitesStore = [];
-  }
-  return globalThis.__localWebsitesStore;
 }
 
 export async function getAllWebsites(): Promise<DemoWebsite[]> {
@@ -43,11 +59,14 @@ export async function getAllWebsites(): Promise<DemoWebsite[]> {
         .select('*')
         .order('createdAt', { ascending: false });
 
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         return data as DemoWebsite[];
       }
-    } catch {
-      // Fallback to local process memory store
+      if (error) {
+        console.warn('Supabase fetch websites notice:', error.message || error);
+      }
+    } catch (err) {
+      console.warn('Supabase fetch websites exception:', err);
     }
   }
 
@@ -103,6 +122,7 @@ export async function createWebsite(
 
   const store = getLocalStore();
   store.unshift(newWebsite);
+  saveLocalStore(store);
 
   if (supabaseUrl && supabaseUrl !== 'https://placeholder.supabase.co') {
     try {
@@ -112,18 +132,25 @@ export async function createWebsite(
         .select()
         .single();
 
+      if (error) {
+        console.warn('Supabase insert website notice:', error.message || error);
+      }
+
       if (!error && inserted) {
         const idx = store.findIndex((w) => w.id === newWebsite.id);
         if (idx !== -1) store[idx] = inserted as DemoWebsite;
+        saveLocalStore(store);
         return inserted as DemoWebsite;
       }
     } catch (err) {
-      console.warn('Supabase insert failed, stored in memory:', err);
+      console.warn('Supabase insert website exception:', err);
     }
   }
 
   return newWebsite;
 }
+
+
 
 export async function updateWebsite(
   id: string,
@@ -153,6 +180,7 @@ export async function updateWebsite(
 
   const idx = store.findIndex((w) => w.id === id);
   if (idx !== -1) store[idx] = updated;
+  saveLocalStore(store);
 
   if (supabaseUrl && supabaseUrl !== 'https://placeholder.supabase.co') {
     try {
@@ -164,10 +192,11 @@ export async function updateWebsite(
         .single();
       if (!error && saved) {
         if (idx !== -1) store[idx] = saved as DemoWebsite;
+        saveLocalStore(store);
         return saved as DemoWebsite;
       }
     } catch (err) {
-      console.warn('Supabase update failed, updated in memory:', err);
+      console.warn('Supabase update failed, saved to local disk:', err);
     }
   }
 
@@ -179,6 +208,7 @@ export async function deleteWebsite(id: string): Promise<boolean> {
   const idx = store.findIndex((w) => w.id === id);
   if (idx !== -1) {
     store.splice(idx, 1);
+    saveLocalStore(store);
   }
 
   if (supabaseUrl && supabaseUrl !== 'https://placeholder.supabase.co') {

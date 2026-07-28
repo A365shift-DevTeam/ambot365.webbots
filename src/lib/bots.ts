@@ -36,21 +36,31 @@ export function isValidUrl(url: string, allowRelative = false): boolean {
 // --- Public API ---
 
 export async function getAllBots(): Promise<Bot[]> {
-  if (!supabaseUrl) return [];
-  const { data, error } = await supabase.from('bots').select('*').order('createdAt', { ascending: false });
-  if (error) {
-    console.error('Failed to get bots from Supabase:', error);
+  if (!supabaseUrl || supabaseUrl === 'https://placeholder.supabase.co') return [];
+  try {
+    const { data, error } = await supabase.from('bots').select('*').order('createdAt', { ascending: false });
+    if (error) {
+      console.warn('Supabase bots table notice:', error.message || error);
+      return [];
+    }
+    return (data as Bot[]) || [];
+  } catch (err) {
+    console.warn('Failed to get bots from Supabase:', err);
     return [];
   }
-  return data as Bot[];
 }
 
 export async function getEnabledBots(): Promise<Bot[]> {
-  if (!supabaseUrl) return [];
-  const { data, error } = await supabase.from('bots').select('*').eq('enabled', true).order('createdAt', { ascending: false });
-  if (error) return [];
-  return data as Bot[];
+  if (!supabaseUrl || supabaseUrl === 'https://placeholder.supabase.co') return [];
+  try {
+    const { data, error } = await supabase.from('bots').select('*').eq('enabled', true).order('createdAt', { ascending: false });
+    if (error) return [];
+    return (data as Bot[]) || [];
+  } catch {
+    return [];
+  }
 }
+
 
 export async function getBotBySlug(slug: string): Promise<Bot | undefined> {
   if (!supabaseUrl) return undefined;
