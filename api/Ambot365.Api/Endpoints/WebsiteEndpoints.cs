@@ -11,6 +11,10 @@ public static class WebsiteEndpoints
     {
         var group = app.MapGroup("/api/websites").WithTags("Websites");
 
+        // Reads stay anonymous: the catalog is public, and requiring a credential
+        // would mean shipping one to the browser. Writes require the admin cookie.
+        var admin = group.MapGroup(string.Empty).RequireAuthorization();
+
         group.MapGet("/", async (AmbotDbContext db, bool? enabled, bool? featured, CancellationToken ct) =>
         {
             var query = db.Websites.AsNoTracking();
@@ -41,7 +45,7 @@ public static class WebsiteEndpoints
             return website is null ? Results.NotFound() : Results.Ok(website);
         });
 
-        group.MapPost("/", async (WebsiteRequest request, AmbotDbContext db, CancellationToken ct) =>
+        admin.MapPost("/", async (WebsiteRequest request, AmbotDbContext db, CancellationToken ct) =>
         {
             var title = request.Title?.Trim();
             if (string.IsNullOrEmpty(title))
@@ -79,7 +83,7 @@ public static class WebsiteEndpoints
             return Results.Created($"/api/websites/{website.Id}", website);
         });
 
-        group.MapPut("/{id:guid}", async (Guid id, WebsiteRequest request, AmbotDbContext db, CancellationToken ct) =>
+        admin.MapPut("/{id:guid}", async (Guid id, WebsiteRequest request, AmbotDbContext db, CancellationToken ct) =>
         {
             var website = await db.Websites.FirstOrDefaultAsync(w => w.Id == id, ct);
             if (website is null)
@@ -123,7 +127,7 @@ public static class WebsiteEndpoints
             return Results.Ok(website);
         });
 
-        group.MapDelete("/{id:guid}", async (Guid id, AmbotDbContext db, CancellationToken ct) =>
+        admin.MapDelete("/{id:guid}", async (Guid id, AmbotDbContext db, CancellationToken ct) =>
         {
             var deleted = await db.Websites.Where(w => w.Id == id).ExecuteDeleteAsync(ct);
             return deleted == 0 ? Results.NotFound() : Results.NoContent();

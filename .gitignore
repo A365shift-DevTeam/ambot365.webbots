@@ -1,60 +1,29 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# AMBOT 365 Data & Uploads
-data/
-public/uploads/
-
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
-
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
-.vercel
-
-# typescript
+﻿# Node / Vite frontend (web/)
+node_modules/
+web/dist/
 *.tsbuildinfo
-next-env.d.ts
 
-.vercel
-.env*
-
-# Visual Studio & .NET Build Artifacts
+# .NET API (api/)
 .vs/
 **/bin/
 **/obj/
 *.user
 *.suo
 
-# The env template must stay tracked: it documents the required vars and holds
-# no secrets. This negation has to come after every .env* rule above.
-!.env.local.example
+# Built SPA is generated into the API's wwwroot by `npm run build`
+api/Ambot365.Api/wwwroot/
 
+# Uploaded images are user data, not source
+api/Ambot365.Api/uploads/
+
+# Local secrets: connection string, admin password, JWT signing key
+api/Ambot365.Api/appsettings.Development.json
+
+# Preserved copy of the old Next.js JSON store
+db/legacy-websites.json
+
+# Misc
+.DS_Store
+*.pem
+npm-debug.log*
+.playwright-mcp/

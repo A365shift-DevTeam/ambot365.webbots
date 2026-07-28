@@ -11,6 +11,10 @@ public static class BotEndpoints
     {
         var group = app.MapGroup("/api/bots").WithTags("Bots");
 
+        // Reads stay anonymous: the catalog is public, and requiring a credential
+        // would mean shipping one to the browser. Writes require the admin cookie.
+        var admin = group.MapGroup(string.Empty).RequireAuthorization();
+
         // enabled=true powers the public /bots listing; omitting it gives the
         // admin dashboard everything, disabled entries included.
         group.MapGet("/", async (AmbotDbContext db, bool? enabled, CancellationToken ct) =>
@@ -38,7 +42,7 @@ public static class BotEndpoints
             return bot is null ? Results.NotFound() : Results.Ok(bot);
         });
 
-        group.MapPost("/", async (BotRequest request, AmbotDbContext db, CancellationToken ct) =>
+        admin.MapPost("/", async (BotRequest request, AmbotDbContext db, CancellationToken ct) =>
         {
             var name = request.Name?.Trim();
             if (string.IsNullOrEmpty(name))
@@ -75,7 +79,7 @@ public static class BotEndpoints
             return Results.Created($"/api/bots/{bot.Id}", bot);
         });
 
-        group.MapPut("/{id:guid}", async (Guid id, BotRequest request, AmbotDbContext db, CancellationToken ct) =>
+        admin.MapPut("/{id:guid}", async (Guid id, BotRequest request, AmbotDbContext db, CancellationToken ct) =>
         {
             var bot = await db.Bots.FirstOrDefaultAsync(b => b.Id == id, ct);
             if (bot is null)
@@ -115,7 +119,7 @@ public static class BotEndpoints
             return Results.Ok(bot);
         });
 
-        group.MapDelete("/{id:guid}", async (Guid id, AmbotDbContext db, CancellationToken ct) =>
+        admin.MapDelete("/{id:guid}", async (Guid id, AmbotDbContext db, CancellationToken ct) =>
         {
             var deleted = await db.Bots.Where(b => b.Id == id).ExecuteDeleteAsync(ct);
             return deleted == 0 ? Results.NotFound() : Results.NoContent();
