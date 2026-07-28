@@ -46,3 +46,15 @@ next-env.d.ts
 
 .vercel
 .env*
+
+# Visual Studio & .NET Build Artifacts
+.vs/
+**/bin/
+**/obj/
+*.user
+*.suo
+
+# The env template must stay tracked: it documents the required vars and holds
+# no secrets. This negation has to come after every .env* rule above.
+!.env.local.example
+

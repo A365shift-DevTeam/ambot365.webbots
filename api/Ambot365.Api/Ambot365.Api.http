@@ -1,0 +1,61 @@
+@host = http://localhost:5201
+@apiKey = REPLACE_WITH_THE_KEY_FROM_appsettings.Development.json
+
+### Health — the only route that needs no key
+GET {{host}}/health
+
+### List all bots (admin view)
+GET {{host}}/api/bots
+X-API-Key: {{apiKey}}
+
+### List only enabled bots (public view)
+GET {{host}}/api/bots?enabled=true
+X-API-Key: {{apiKey}}
+
+### Create a bot
+POST {{host}}/api/bots
+X-API-Key: {{apiKey}}
+Content-Type: application/json
+
+{
+  "name": "Support Demo",
+  "description": "Customer support assistant",
+  "scriptCode": "<script src=\"https://example.com/bot.js\"></script>",
+  "category": "customer-support"
+}
+
+### Fetch by slug
+GET {{host}}/api/bots/by-slug/support-demo
+X-API-Key: {{apiKey}}
+
+### List demo websites
+GET {{host}}/api/websites
+X-API-Key: {{apiKey}}
+
+### Create a demo website
+POST {{host}}/api/websites
+X-API-Key: {{apiKey}}
+Content-Type: application/json
+
+{
+  "title": "Pearl",
+  "description": "E-commerce demo storefront",
+  "url": "https://pearl.ambot365.com/",
+  "category": "e-commerce",
+  "tags": ["storefront", "retail"],
+  "featured": true
+}
+
+### Rejected: unknown category returns 400
+POST {{host}}/api/websites
+X-API-Key: {{apiKey}}
+Content-Type: application/json
+
+{
+  "title": "Bad Category",
+  "url": "https://example.com",
+  "category": "not-a-category"
+}
+
+### Rejected: missing key returns 401
+GET {{host}}/api/bots

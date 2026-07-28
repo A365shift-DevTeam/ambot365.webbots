@@ -33,7 +33,14 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, description, scriptCode, backgroundImageUrl, category } = body as BotFormData;
+    const {
+      name,
+      description,
+      scriptCode,
+      backgroundImageUrl,
+      mobileBackgroundImageUrl,
+      category,
+    } = body as BotFormData;
 
     // Validate required fields
     if (!name?.trim() || !description?.trim() || !scriptCode?.trim() || !category) {
@@ -51,6 +58,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (mobileBackgroundImageUrl && !isValidUrl(mobileBackgroundImageUrl, true)) {
+      return Response.json(
+        { success: false, error: 'Invalid mobile background image URL' },
+        { status: 400 }
+      );
+    }
+
 
     // Validate category
     const validCategories = CATEGORIES.map((c) => c.value);
@@ -61,7 +75,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const newBot = await createBot({ name, description, scriptCode, backgroundImageUrl, category });
+    const newBot = await createBot({
+      name,
+      description,
+      scriptCode,
+      backgroundImageUrl,
+      mobileBackgroundImageUrl,
+      category,
+    });
     return Response.json({ success: true, data: newBot }, { status: 201 });
   } catch {
     return Response.json(

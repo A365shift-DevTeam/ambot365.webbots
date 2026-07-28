@@ -1,0 +1,5 @@
+bin/
+obj/
+
+# Holds the local Postgres password and the API key.
+Ambot365.Api/appsettings.Development.json

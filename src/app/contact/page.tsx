@@ -27,8 +27,8 @@ export default function ContactPage() {
 
         {/* Contact content */}
         <section className="py-12 sm:py-16">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div>
               {/* Contact info */}
               <div>
                 <h2 className="text-2xl font-bold text-slate-900 mb-6">
@@ -101,70 +101,6 @@ export default function ContactPage() {
                     and we&apos;ll get back to you within 24 hours.
                   </p>
                 </div>
-              </div>
-
-              {/* Contact form */}
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
-                <h2 className="text-xl font-bold text-slate-900 mb-6">
-                  Send Us a Message
-                </h2>
-                <form
-                  action={`mailto:${BRAND.supportEmail}`}
-                  method="POST"
-                  encType="text/plain"
-                  className="space-y-5"
-                  id="contact-form"
-                >
-                  <div>
-                    <label htmlFor="contact-name" className="block text-sm font-medium text-slate-700 mb-2">
-                      Your Name
-                    </label>
-                    <input
-                      type="text"
-                      id="contact-name"
-                      name="name"
-                      required
-                      placeholder="John Doe"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-800 placeholder-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="contact-email" className="block text-sm font-medium text-slate-700 mb-2">
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      id="contact-email"
-                      name="email"
-                      required
-                      placeholder="john@example.com"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-800 placeholder-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="contact-message" className="block text-sm font-medium text-slate-700 mb-2">
-                      Message
-                    </label>
-                    <textarea
-                      id="contact-message"
-                      name="message"
-                      required
-                      rows={5}
-                      placeholder="How can we help you?"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-800 placeholder-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all outline-none resize-none"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    id="contact-submit-btn"
-                    className="w-full px-6 py-3 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 text-white font-semibold shadow-md hover:shadow-lg hover:from-brand-600 hover:to-brand-700 transition-all cursor-pointer"
-                  >
-                    Send Message
-                  </button>
-                </form>
               </div>
             </div>
           </div>
