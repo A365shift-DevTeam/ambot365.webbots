@@ -43,10 +43,9 @@ export default function WebsitesSection() {
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
               Featured Client <span className="text-brand-400">Demo Websites</span>
             </h2>
-            <p className="text-slate-400 text-base max-w-2xl mt-2">
-              Explore live high-converting websites built for various industries. Test them directly
-              in interactive desktop, tablet, and mobile device viewports.
-            </p>
+            <p className="text-[#64748B] text-base sm:text-lg max-w-2xl mx-auto font-normal leading-relaxed">
+            Click any website to explore full interactive previews.
+          </p>
           </div>
 
           <Link

@@ -6,10 +6,7 @@ interface WebsitePreviewModalProps {
   onClose: () => void;
 }
 
-type DeviceMode = 'desktop' | 'tablet' | 'mobile';
-
 export default function WebsitePreviewModal({ website, onClose }: WebsitePreviewModalProps) {
-  const [device, setDevice] = useState<DeviceMode>('desktop');
   const [copied, setCopied] = useState(false);
 
   // Escape closes the modal, and the page behind it must not scroll while open.
@@ -54,45 +51,6 @@ export default function WebsitePreviewModal({ website, onClose }: WebsitePreview
               <h3 className="text-sm font-bold text-white truncate">{website.title}</h3>
               <p className="text-xs text-slate-400 truncate">{website.url}</p>
             </div>
-          </div>
-
-          {/* Device Frame Viewport Switcher */}
-          <div className="hidden sm:flex items-center bg-slate-800 p-1 rounded-xl border border-slate-700">
-            <button
-              onClick={() => setDevice('desktop')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                device === 'desktop' ? 'bg-brand-500 text-white shadow-md' : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-              Desktop
-            </button>
-
-            <button
-              onClick={() => setDevice('tablet')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                device === 'tablet' ? 'bg-brand-500 text-white shadow-md' : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-              </svg>
-              Tablet
-            </button>
-
-            <button
-              onClick={() => setDevice('mobile')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                device === 'mobile' ? 'bg-brand-500 text-white shadow-md' : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-              </svg>
-              Mobile
-            </button>
           </div>
 
           {/* Right Action Buttons */}
@@ -141,15 +99,7 @@ export default function WebsitePreviewModal({ website, onClose }: WebsitePreview
 
         {/* Viewport Frame Container */}
         <div className="flex-1 bg-slate-950 flex items-center justify-center p-4 sm:p-6 overflow-hidden relative">
-          <div
-            className={`h-full transition-all duration-300 bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-800 flex flex-col ${
-              device === 'desktop'
-                ? 'w-full'
-                : device === 'tablet'
-                  ? 'w-[768px] max-w-full'
-                  : 'w-[375px] max-w-full'
-            }`}
-          >
+          <div className="h-full w-full bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-800 flex flex-col">
             {/* Device Screen Bar */}
             <div className="bg-slate-100 px-4 py-2 border-b border-slate-200 flex items-center justify-between">
               <div className="flex items-center gap-1.5">
@@ -161,7 +111,7 @@ export default function WebsitePreviewModal({ website, onClose }: WebsitePreview
                 {website.url}
               </div>
               <div className="w-12 text-right text-[10px] font-semibold text-slate-400 uppercase">
-                {device}
+                Preview
               </div>
             </div>
 

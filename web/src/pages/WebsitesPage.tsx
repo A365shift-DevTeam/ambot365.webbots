@@ -54,7 +54,7 @@ export default function WebsitesPage() {
             Demo <span className="gradient-text">Websites</span>
           </h1>
           <p className="text-lg text-slate-500 max-w-xl mx-auto">
-            Live client websites you can explore in desktop, tablet, and mobile viewports.
+            Live client websites you can explore in interactive preview.
           </p>
         </div>
       </section>

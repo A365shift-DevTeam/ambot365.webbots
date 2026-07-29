@@ -24,7 +24,7 @@ export default function Hero() {
           {/* Subheadline */}
           <p className="text-lg sm:text-xl text-slate-500 leading-relaxed mb-10 max-w-2xl mx-auto animate-slide-up delay-100">
             Showcase your live demo websites and intelligent AI chatbots to clients with interactive
-            desktop, tablet, and mobile device previews.
+            website previews.
           </p>
 
           {/* Buttons */}
