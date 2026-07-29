@@ -1,5 +1,7 @@
 bin/
 obj/
 
-# Holds the local Postgres password and the API key.
-Ambot365.Api/appsettings.Development.json
+# Both settings files are committed on purpose: appsettings.json holds the
+# production configuration and appsettings.Development.json overrides it locally.
+# Committing the development file is what stops a fresh clone from falling back
+# to the production database.

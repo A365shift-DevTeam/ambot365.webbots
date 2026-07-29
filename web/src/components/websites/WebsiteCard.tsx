@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { DemoWebsite } from '@/lib/types';
 import { CATEGORIES } from '@/lib/constants';
+import { assetUrl } from '@/lib/api';
 
 interface WebsiteCardProps {
   website: DemoWebsite;
@@ -16,7 +17,7 @@ export default function WebsiteCard({ website, onPreviewClick }: WebsiteCardProp
       <div className="relative aspect-video bg-slate-900 overflow-hidden">
         {website.thumbnailUrl ? (
           <img
-            src={website.thumbnailUrl}
+            src={assetUrl(website.thumbnailUrl)}
             alt={website.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
           />

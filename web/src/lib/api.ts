@@ -4,10 +4,33 @@
 // httpOnly session cookie that JavaScript cannot read, so nothing secret is
 // ever shipped in this bundle. Public GETs need no credential at all.
 //
-// In development Vite proxies /api to the API; in production the API serves
-// this bundle. Either way the browser sees one origin, so no CORS is involved.
+// In development Vite proxies /api and /uploads to the API, so the browser sees
+// one origin. In production the SPA and the API are separate hosts, and
+// VITE_API_BASE_URL (baked in at build time) points at the API. The two hosts
+// share the registrable domain ambot365.com, which keeps requests same-site and
+// lets the session cookie stay SameSite=Lax.
 
 import type { Bot, BotFormData, DemoWebsite, WebsiteFormData } from './types';
+
+/**
+ * Absolute origin of the API, or '' meaning "same origin as this page".
+ * Normalised without a trailing slash so concatenation stays predictable.
+ */
+const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/+$/, '');
+
+/**
+ * Resolves a server-relative path against the API.
+ *
+ * Uploaded images are stored in the database as server-relative paths such as
+ * `/uploads/abc.png`. Rendering one directly would resolve it against the SPA's
+ * own host, which has no uploads directory — so every image must go through
+ * here. Absolute and data URLs (the "paste an image URL" field) pass untouched.
+ */
+export function assetUrl(path: string | null | undefined): string {
+  if (!path) return '';
+  if (/^(https?:|data:|blob:)/i.test(path)) return path;
+  return `${API_BASE}${path.startsWith('/') ? path : `/${path}`}`;
+}
 
 export class ApiError extends Error {
   // Declared and assigned explicitly rather than as a constructor parameter
@@ -28,7 +51,7 @@ type Options = {
 };
 
 async function send(path: string, { method = 'GET', body, query }: Options = {}) {
-  const url = new URL(path, window.location.origin);
+  const url = new URL(path, API_BASE || window.location.origin);
   for (const [key, value] of Object.entries(query ?? {})) {
     if (value !== undefined) url.searchParams.set(key, String(value));
   }
@@ -123,7 +146,7 @@ export async function uploadImage(file: File): Promise<string> {
   form.append('file', file);
 
   // No Content-Type header: the browser must set the multipart boundary itself.
-  const response = await fetch('/api/uploads', {
+  const response = await fetch(new URL('/api/uploads', API_BASE || window.location.origin), {
     method: 'POST',
     body: form,
     credentials: 'include',

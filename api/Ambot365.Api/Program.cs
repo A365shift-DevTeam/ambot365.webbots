@@ -8,18 +8,42 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Secrets live in environment variables or user-secrets, not appsettings.json:
-//   ConnectionStrings__Postgres, Admin__Password, Admin__JwtSecret
+// appsettings.json holds the production configuration and is what ships to the
+// server; appsettings.Development.json overrides it locally and is never
+// published. See docs/DEPLOYMENT.md.
 var connectionString = builder.Configuration.GetConnectionString("Postgres");
 if (string.IsNullOrWhiteSpace(connectionString))
 {
     throw new InvalidOperationException(
-        "No Postgres connection string. Set ConnectionStrings__Postgres (see api/README.md).");
+        "No Postgres connection string. Set ConnectionStrings:Postgres in "
+            + "appsettings.json (see docs/DEPLOYMENT.md).");
 }
 
 // Throws at startup if the password or signing key is missing — better than
 // booting an API whose admin routes silently accept nothing, or everything.
-var auth = AuthOptions.FromConfiguration(builder.Configuration);
+var auth = AuthOptions.FromConfiguration(builder.Configuration, builder.Environment.IsDevelopment());
+
+// The SPA is served from its own host, so every browser call to this API is
+// cross-origin and needs an explicit allow-list. AllowCredentials rules out a
+// "*" wildcard: the origins must be spelled out.
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+if (allowedOrigins.Length == 0 && !builder.Environment.IsDevelopment())
+{
+    // Failing here is deliberate. With no origins configured the API still
+    // answers curl and health checks perfectly, while every browser request
+    // from the SPA dies in preflight — a failure that looks like a frontend bug
+    // and costs hours. Better to refuse to start and say why.
+    throw new InvalidOperationException(
+        "No CORS origins configured. Set Cors:AllowedOrigins to the SPA's exact origin "
+            + "(for example https://demo.ambot365.com) in appsettings.json "
+            + "(see docs/DEPLOYMENT.md).");
+}
+
+builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
+    .WithOrigins(allowedOrigins)
+    .AllowCredentials()
+    .AllowAnyHeader()
+    .AllowAnyMethod()));
 
 builder.Services.AddDbContext<AmbotDbContext>(options =>
     options
@@ -73,6 +97,14 @@ if (app.Environment.IsDevelopment())
         options.DocumentTitle = "AMBOT 365 Catalog API";
     });
 }
+else
+{
+    // Both sites are HTTPS in production. HSTS tells the browser to refuse the
+    // plain-HTTP version outright, which also keeps the Secure session cookie
+    // from ever being solicited over an unencrypted connection.
+    app.UseHsts();
+    app.UseHttpsRedirection();
+}
 
 app.UseExceptionHandler(errorApp => errorApp.Run(async context =>
 {
@@ -80,23 +112,50 @@ app.UseExceptionHandler(errorApp => errorApp.Run(async context =>
     await context.Response.WriteAsJsonAsync(new { success = false, error = "Internal server error" });
 }));
 
-// Serves the built SPA from wwwroot. Same-origin hosting is what lets the
-// session stay in an httpOnly cookie and removes the need for CORS entirely.
-app.UseDefaultFiles();
-app.UseStaticFiles();
+// CORS runs before authentication so that a rejected preflight never reaches
+// the auth pipeline, and so failures surface as CORS errors rather than 401s.
+app.UseCors();
 
-// Uploaded images are served from their own directory outside wwwroot, so a
-// frontend build (which empties wwwroot) can never delete them.
+// This app serves the API and uploaded files only. The SPA is a separate IIS
+// site (demo.ambot365.com) built from web/dist — see docs/DEPLOYMENT.md.
+//
+// Creating this directory must never take the whole API down: under IIS the app
+// pool identity often cannot write to the site root, and an unhandled throw here
+// surfaces as an opaque HTTP 500.30 with the real cause buried in a log. Serving
+// the catalog is far more important than serving uploads, so failure is logged
+// and the site keeps running — the upload endpoint reports the problem instead.
 var uploadsPath = UploadEndpoints.UploadsPath(app.Environment);
-Directory.CreateDirectory(uploadsPath);
-app.UseStaticFiles(new StaticFileOptions
+try
 {
-    FileProvider = new PhysicalFileProvider(uploadsPath),
-    RequestPath = "/uploads",
-});
+    Directory.CreateDirectory(uploadsPath);
+
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(uploadsPath),
+        RequestPath = "/uploads",
+    });
+}
+catch (Exception ex)
+{
+    app.Logger.LogError(
+        ex,
+        "Could not prepare the uploads directory at {UploadsPath}. Image uploads and "
+            + "previously uploaded images will be unavailable until the application "
+            + "identity has write access to this path.",
+        uploadsPath);
+}
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// A deployed API root that answers instead of 404ing is the quickest way to
+// confirm the site is up and running the build you think it is.
+app.MapGet("/", () => Results.Ok(new
+{
+    service = "AMBOT 365 Catalog API",
+    status = "ok",
+    environment = app.Environment.EnvironmentName,
+}));
 
 app.MapGet("/health", async (AmbotDbContext db, CancellationToken ct) =>
 {
@@ -111,8 +170,8 @@ app.MapBotEndpoints();
 app.MapWebsiteEndpoints();
 app.MapUploadEndpoints(app.Environment);
 
-// Client-side routes such as /admin/edit/123 must return index.html rather than
-// a 404, so React Router can resolve them. /api and /uploads are excluded.
-app.MapFallbackToFile("index.html");
+// No SPA fallback here on purpose. Client-side routes are resolved by the SPA's
+// own IIS site (web/public/web.config rewrites unmatched paths to index.html);
+// an unmatched path on the API is a genuine 404.
 
 app.Run();

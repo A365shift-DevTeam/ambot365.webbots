@@ -49,34 +49,7 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* Decorative bot cards preview */}
-        <div className="mt-16 relative max-w-4xl mx-auto animate-slide-up delay-300">
-          <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-slate-200 shadow-2xl p-1">
-            <div className="bg-gradient-to-br from-slate-50 to-brand-50/30 rounded-xl p-8 sm:p-10">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {[
-                  { name: 'School Admission', icon: '🎓', color: 'from-emerald-400 to-emerald-600' },
-                  { name: 'Real Estate', icon: '🏠', color: 'from-blue-400 to-blue-600' },
-                  { name: 'Customer Support', icon: '💬', color: 'from-violet-400 to-violet-600' },
-                  { name: 'Healthcare', icon: '🏥', color: 'from-rose-400 to-rose-600' },
-                ].map((item, i) => (
-                  <div
-                    key={item.name}
-                    className="bg-white rounded-xl p-4 shadow-sm border border-slate-100 hover:shadow-md hover:-translate-y-1 transition-all duration-300 text-center"
-                    style={{ animationDelay: `${(i + 4) * 100}ms` }}
-                  >
-                    <div
-                      className={`w-10 h-10 mx-auto mb-2 rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center text-lg shadow-sm`}
-                    >
-                      {item.icon}
-                    </div>
-                    <p className="text-xs font-medium text-slate-600">{item.name}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
+
       </div>
     </section>
   );

@@ -28,7 +28,12 @@ public static class AuthEndpoints
                 // an XSS bug cannot exfiltrate the session the way it could a
                 // token kept in localStorage.
                 HttpOnly = true,
-                Secure = context.Request.IsHttps,
+                Secure = auth.RequireSecureCookie || context.Request.IsHttps,
+                // demo.ambot365.com and demoapi.ambot365.com share the registrable
+                // domain ambot365.com, so requests between them are same-site even
+                // though they are cross-origin. Lax is therefore sufficient, and
+                // avoids exposing the session cookie to genuine cross-site sends
+                // the way SameSite=None would.
                 SameSite = SameSiteMode.Lax,
                 Path = "/",
                 MaxAge = AuthOptions.Lifetime,

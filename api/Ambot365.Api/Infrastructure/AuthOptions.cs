@@ -17,13 +17,22 @@ public sealed class AuthOptions
     public required string Password { get; init; }
     public required SymmetricSecurityKey SigningKey { get; init; }
 
-    public static AuthOptions FromConfiguration(IConfiguration configuration)
+    /// <summary>
+    /// Forces the <c>Secure</c> flag on the session cookie outside development.
+    /// Relying on <c>Request.IsHttps</c> alone is fragile: behind a TLS-terminating
+    /// proxy the request reaches the app as plain HTTP, and the cookie would be
+    /// issued without <c>Secure</c> — sendable over an unencrypted connection.
+    /// </summary>
+    public required bool RequireSecureCookie { get; init; }
+
+    public static AuthOptions FromConfiguration(IConfiguration configuration, bool isDevelopment)
     {
         var password = configuration["Admin:Password"];
         if (string.IsNullOrWhiteSpace(password))
         {
             throw new InvalidOperationException(
-                "No admin password configured. Set Admin__Password (see api/README.md).");
+                "No admin password configured. Set Admin:Password in appsettings.json "
+                    + "(see docs/DEPLOYMENT.md).");
         }
 
         var secret = configuration["Admin:JwtSecret"];
@@ -32,13 +41,15 @@ public sealed class AuthOptions
             // HMAC-SHA256 needs at least 256 bits of key material; a short secret
             // would either throw deep inside the token handler or weaken signing.
             throw new InvalidOperationException(
-                "Admin__JwtSecret must be set and at least 32 bytes (see api/README.md).");
+                "Admin:JwtSecret must be set in appsettings.json and be at least 32 bytes "
+                    + "(see docs/DEPLOYMENT.md).");
         }
 
         return new AuthOptions
         {
             Password = password,
             SigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
+            RequireSecureCookie = !isDevelopment,
         };
     }
 

@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
-import { uploadImage } from '@/lib/api';
+import { assetUrl, uploadImage } from '@/lib/api';
 
 interface ImageUploaderProps {
   value: string;
@@ -44,7 +44,9 @@ export default function ImageUploader({
       {/* Preview Box if image exists */}
       {value ? (
         <div className="relative aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-900 group max-w-md">
-          <img src={value} alt="Thumbnail preview" className="w-full h-full object-cover" />
+          {/* `value` is what gets stored: a server-relative /uploads path, or a
+              pasted absolute URL. Only the preview needs resolving. */}
+          <img src={assetUrl(value)} alt="Thumbnail preview" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-4">
             <button
               type="button"

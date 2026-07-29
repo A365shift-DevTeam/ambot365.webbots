@@ -5,7 +5,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import BotEmbed from '@/components/bots/BotEmbed';
 import NotFoundPage from '@/pages/NotFoundPage';
-import { getBotBySlug } from '@/lib/api';
+import { assetUrl, getBotBySlug } from '@/lib/api';
 import { BRAND, CATEGORIES } from '@/lib/constants';
 import { usePageTitle } from '@/lib/usePageTitle';
 import type { Bot } from '@/lib/types';
@@ -55,8 +55,8 @@ export default function BotDetailPage() {
 
   // Full-bleed mode: the background image simulates the bot on a client's site.
   if (bot.backgroundImageUrl || bot.mobileBackgroundImageUrl) {
-    const desktopBg = bot.backgroundImageUrl || bot.mobileBackgroundImageUrl;
-    const mobileBg = bot.mobileBackgroundImageUrl || bot.backgroundImageUrl;
+    const desktopBg = assetUrl(bot.backgroundImageUrl || bot.mobileBackgroundImageUrl);
+    const mobileBg = assetUrl(bot.mobileBackgroundImageUrl || bot.backgroundImageUrl);
 
     return (
       <main

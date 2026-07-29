@@ -1,19 +1,46 @@
 # AMBOT 365 Catalog API
 
 ASP.NET Core 9 minimal API over PostgreSQL. It owns the `bots` and `websites`
-catalog that the Next.js site reads and that `/admin` edits.
+catalog that the React SPA in `web/` reads and that `/admin` edits.
 
 ## How it fits together
 
 ```
-Browser ──► Next.js ──── X-API-Key ────► this API ──► PostgreSQL
-              │        (server to server)
-              └──► Supabase Storage (image uploads only)
+Browser ──► SPA (demo.ambot365.com, static IIS site, built from web/)
+              │
+              │  fetch, credentials: 'include'
+              ▼
+            this API (demoapi.ambot365.com) ──► PostgreSQL
+                                           └──► ./uploads (image files on disk)
 ```
 
-The browser never calls this API directly. Next.js route handlers authenticate
-the admin with the existing session cookie (`src/lib/auth.ts`), then call here
-with a shared key. That means no CORS, no cookies, and no JWT secret to share.
+The browser calls this API directly. The admin session is a JWT in an httpOnly
+cookie that JavaScript cannot read, so the SPA bundle carries no credential of
+any kind and public `GET`s need none.
+
+Because the SPA is served from a different host, every browser call is
+cross-**origin** and the API must allow that origin explicitly
+(`Cors:AllowedOrigins`). It is not cross-**site** — both hosts share the
+registrable domain `ambot365.com` — so the cookie stays `SameSite=Lax`.
+
+## Configuration
+
+Two files, the standard ASP.NET Core layering — the base file is production, and
+development overrides it.
+
+| File | Published? | Purpose |
+| --- | --- | --- |
+| `appsettings.json` | yes | **The production configuration.** Ships to the server as-is; nothing is created there by hand. |
+| `appsettings.Development.json` | no | Overrides every value above when `ASPNETCORE_ENVIRONMENT=Development`. |
+
+Both are committed. `appsettings.json` therefore contains real production
+credentials — the repository must stay private, and anyone with access to it has
+them. The development file is committed too, deliberately: without it a fresh
+clone would fall through to the production database.
+
+The app **refuses to start** if the connection string, admin password, signing
+key, or (outside Development) the CORS allow-list is missing. That is deliberate:
+the alternative is an API that looks healthy while every admin action fails.
 
 ## Schema
 
@@ -30,17 +57,12 @@ that file, re-run it, and update `Data/Entities.cs` to match.
    & 'C:\Program Files\PostgreSQL\16\bin\psql.exe' -U postgres -d ambot365 -f ..\db\schema.sql
    ```
 
-2. Fill in `Ambot365.Api/appsettings.Development.json` (gitignored):
+2. Adjust `Ambot365.Api/appsettings.Development.json` if your local Postgres
+   password differs. It is already committed with working local defaults, so
+   there is usually nothing to do here.
 
-   ```json
-   {
-     "ConnectionStrings": { "Postgres": "Host=localhost;Port=5432;Database=ambot365;Username=postgres;Password=..." },
-     "Api": { "Key": "a-long-random-string" }
-   }
-   ```
-
-   The app throws at startup if either is missing — better than booting an
-   unauthenticated API that looks healthy.
+   Keep every production key overridden in that file. Removing one makes it fall
+   through to `appsettings.json` — which points at the production database.
 
 3. Run it:
 
@@ -51,35 +73,37 @@ that file, re-run it, and update `Data/Entities.cs` to match.
    It listens on `http://localhost:5201`. `GET /health` needs no key and reports
    database connectivity.
 
-4. Point the Next.js app at it in `.env.local` at the repo root. Copy
-   `.env.local.example` and fill it in — and note that the two `AMBOT_*` vars are
-   **added to** the existing ones, not a replacement for them:
+4. Run the SPA against it:
 
+   ```powershell
+   cd ..\web
+   npm install
+   npm run dev
    ```
-   AMBOT_API_URL=http://localhost:5201
-   AMBOT_API_KEY=the-same-long-random-string
-   ```
 
-   `AMBOT_API_KEY` has no `NEXT_PUBLIC_` prefix by design — `src/lib/api.ts` is
-   server-only and the key must never reach the browser. It has to match
-   `Api:Key` exactly; if it doesn't, the site raises an explicit "rejected the
-   API key" error rather than quietly showing an empty catalog.
+   It serves `http://localhost:5173` and proxies `/api` and `/uploads` to this
+   API (`web/vite.config.ts`). Change the target by setting
+   `VITE_DEV_API_ORIGIN` in `web/.env.development`.
 
-   Do not create a `.env.local` containing only these two variables. The app
-   silently falls back to insecure defaults for anything missing:
+## Deploying
 
-   | Missing variable | Silent consequence |
-   | --- | --- |
-   | `JWT_SECRET` | Sessions are signed with the hardcoded `fallback-secret-change-me` (`src/lib/auth.ts:6`) |
-   | `ADMIN_PASSWORD` | `/admin/login` accepts `admin123` (`src/lib/auth.ts:49`) |
-   | `NEXT_PUBLIC_SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` | Image uploads stop going to Supabase Storage and start writing to `public/uploads` on local disk (`src/app/api/upload/route.ts:34`) |
+See [`docs/DEPLOYMENT.md`](../docs/DEPLOYMENT.md) for the full IIS procedure —
+both sites, prerequisites, verification, and a troubleshooting table keyed by
+what the log actually says.
 
-   Supabase is still required for image uploads. The .NET API replaced Supabase
-   as the *database*, not as the file store.
+Two things that catch people out:
+
+- **Publish, never copy `bin\Release\net9.0`.** Only `dotnet publish` generates
+  `web.config`; without it IIS cannot run the app at all.
+- **Do not rename settings files on the server.** `appsettings.json` is already
+  the production configuration and arrives with the publish output. Renaming it
+  leaves the app with no base configuration and it exits with *"No Postgres
+  connection string"* — reported by IIS as an opaque 500.30.
 
 ## Endpoints
 
-Every `/api/*` route requires the `X-API-Key` header.
+Public `GET`s are anonymous. Writes require the admin session cookie, which
+`POST /api/auth/login` sets.
 
 | Method | Route | Notes |
 | --- | --- | --- |
@@ -95,9 +119,18 @@ Every `/api/*` route requires the `X-API-Key` header.
 | `POST` | `/api/websites` | `title` and an http/https `url` required |
 | `PUT` | `/api/websites/{id}` | Omitted fields are left unchanged |
 | `DELETE` | `/api/websites/{id}` | |
+| `POST` | `/api/uploads` | Multipart image upload; returns a server-relative `/uploads/…` URL |
+| `POST` | `/api/auth/login` | Sets the httpOnly session cookie |
+| `POST` | `/api/auth/logout` | Clears it |
+| `GET` | `/api/auth/me` | Whether the caller is authenticated |
+| `GET` | `/health` | Anonymous; reports database connectivity |
 
 Responses are the entities themselves, serialized camelCase — the exact shape of
-`Bot` and `DemoWebsite` in `src/lib/types.ts`.
+`Bot` and `DemoWebsite` in `web/src/lib/types.ts`.
+
+Upload URLs are stored server-relative so they stay portable. The SPA resolves
+them against the API host via `assetUrl()` in `web/src/lib/api.ts` — rendering one
+directly would resolve it against the SPA's own host, where nothing is served.
 
 ## Two things worth knowing
 

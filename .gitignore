@@ -10,14 +10,13 @@ web/dist/
 *.user
 *.suo
 
-# Built SPA is generated into the API's wwwroot by `npm run build`
-api/Ambot365.Api/wwwroot/
-
 # Uploaded images are user data, not source
 api/Ambot365.Api/uploads/
 
-# Local secrets: connection string, admin password, JWT signing key
-api/Ambot365.Api/appsettings.Development.json
+# Both API settings files are committed on purpose: appsettings.json is the
+# production configuration and appsettings.Development.json overrides it locally.
+# Committing the development file is what stops a fresh clone from falling
+# through to the production database.
 
 # Preserved copy of the old Next.js JSON store
 db/legacy-websites.json

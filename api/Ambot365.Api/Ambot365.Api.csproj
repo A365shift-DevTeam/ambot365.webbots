@@ -4,7 +4,22 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- This app has no web root: the SPA moved to its own IIS site, and uploads
+         are served from an explicit PhysicalFileProvider outside wwwroot. The
+         Web SDK otherwise emits a static-web-assets manifest pointing at a
+         wwwroot that does not exist, and the Development-only loader that reads
+         it throws DirectoryNotFoundException before the app can start. -->
+    <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- appsettings.json IS published — it is the production configuration.
+         The development overrides must never reach the server: if they did, a
+         deployed instance running as Development would expose Swagger and point
+         at a local database. -->
+    <Content Update="appsettings.Development.json" CopyToPublishDirectory="Never" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="EFCore.NamingConventions" Version="9.0.0" />
